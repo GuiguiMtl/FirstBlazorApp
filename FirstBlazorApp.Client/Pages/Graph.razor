@@ -1,0 +1,55 @@
+﻿@using Telerik.Blazor
+@using Telerik.Blazor.Components.Chart
+@using FirstBlazorApp.Shared;
+@using RestSharp;
+@using System.Threading;
+@implements IDisposable;
+
+    <TelerikChart ref="@chart">
+        <TelerikChartValueAxes>
+            <TelerikChartValueAxis Color="red"></TelerikChartValueAxis>
+        </TelerikChartValueAxes>
+    </TelerikChart>
+
+@functions {
+
+    Telerik.Blazor.Components.Chart.TelerikChart chart;
+
+    CancellationTokenSource pollingCancellationToken;
+    StockData data;
+
+    protected override void OnInit()
+    {
+        pollingCancellationToken?.Cancel();
+        data = new StockData
+        {
+            Symbol = "aapl",
+            StockValue = new List<double>()
+        };
+
+        chart.
+    }
+
+    void IDisposable.Dispose()
+    {
+        pollingCancellationToken?.Cancel();
+    }
+
+    private async void PollStockDataAsync(string symbol)
+    {
+        pollingCancellationToken = new CancellationTokenSource();
+        var restClient = new RestClient("https://sandbox.iexapis.com/v1");
+        var getStockValueRequest = new RestRequest("stock/{symbol}");
+        getStockValueRequest.AddQueryParameter("token", "Tsk_6c7152e5bd0a47a89cf6bbf72a607bde");
+        getStockValueRequest.AddUrlSegment("symbol", symbol);
+
+        while (!pollingCancellationToken.IsCancellationRequested)
+        {
+            var response = await restClient.ExecuteGetTaskAsync<double>(getStockValueRequest);
+            if (response.IsSuccessful)
+            {
+                data.StockValue.Add(response.Data);
+            }
+        }
+    }
+}

@@ -1,32 +1,37 @@
 ﻿@page "/graph"
 @using Telerik.Blazor.Components.TextBox;
 @using Telerik.Blazor.Components.Button;
-@using System.Threading;
 @inject HttpClient HttpClient;
-@inject ClientState ClientState;
+@inject ClientState State;
 
 <div>
     Add Symbol
     <TelerikTextBox Id="SymbolToAddId" bind-Value="@SymbolToAdd" />
-    <TelerikButton OnClick="() => ClientState.AddSymbols(SymbolToAdd)">Add</TelerikButton>
+    <TelerikButton OnClick="() => State.AddSymbols(SymbolToAdd)">Add</TelerikButton>
 </div>
 
-    @foreach (var symbolToDisplay in ClientState.SymbolsToDisplay)
+    @foreach (var symbolToDisplay in State.SymbolsToDisplay)
     {
-        <StockGraph SymbolToDisplay="@symbolToDisplay" OnRemoved="() => ClientState.RemoveSymbol(symbolToDisplay)"/>
+        <StockGraph SymbolToDisplay="@symbolToDisplay" OnRemoved="() => State.RemoveSymbol(symbolToDisplay)"/>
     }
 
 @functions {
-    string SymbolToAdd;
-    List<string> ListOfGraphsToDisplay = new List<string>();
+        string SymbolToAdd;
+        List<string> ListOfGraphsToDisplay = new List<string>();
 
-    static DateTime date = DateTime.Now.AddDays(-1);
+        static DateTime date = DateTime.Now.AddDays(-1);
 
     protected async override Task OnInitAsync()
     {
-        ClientState.StateChanged += OnClientStateChanged;
+        State.StateChanged += OnClientStateChanged;
     }
 
-    void OnClientStateChanged(object sender, EventArgs e) => StateHasChanged();
-        
+    void OnClientStateChanged(object sender, EventArgs e)
+    {
+        foreach (var symbol in State.SymbolsToDisplay)
+        {
+            Console.WriteLine(symbol);
+        }
+
+    }
 }

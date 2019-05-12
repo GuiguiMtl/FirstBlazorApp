@@ -1,55 +1,32 @@
-﻿@using Telerik.Blazor
-@using Telerik.Blazor.Components.Chart
-@using FirstBlazorApp.Shared;
-@using RestSharp;
+﻿@page "/graph"
+@using Telerik.Blazor.Components.TextBox;
+@using Telerik.Blazor.Components.Button;
 @using System.Threading;
-@implements IDisposable;
+@inject HttpClient HttpClient;
+@inject ClientState ClientState;
 
-    <TelerikChart ref="@chart">
-        <TelerikChartValueAxes>
-            <TelerikChartValueAxis Color="red"></TelerikChartValueAxis>
-        </TelerikChartValueAxes>
-    </TelerikChart>
+<div>
+    Add Symbol
+    <TelerikTextBox Id="SymbolToAddId" bind-Value="@SymbolToAdd" />
+    <TelerikButton OnClick="() => ClientState.AddSymbols(SymbolToAdd)">Add</TelerikButton>
+</div>
+
+    @foreach (var symbolToDisplay in ClientState.SymbolsToDisplay)
+    {
+        <StockGraph SymbolToDisplay="@symbolToDisplay" OnRemoved="() => ClientState.RemoveSymbol(symbolToDisplay)"/>
+    }
 
 @functions {
+    string SymbolToAdd;
+    List<string> ListOfGraphsToDisplay = new List<string>();
 
-    Telerik.Blazor.Components.Chart.TelerikChart chart;
+    static DateTime date = DateTime.Now.AddDays(-1);
 
-    CancellationTokenSource pollingCancellationToken;
-    StockData data;
-
-    protected override void OnInit()
+    protected async override Task OnInitAsync()
     {
-        pollingCancellationToken?.Cancel();
-        data = new StockData
-        {
-            Symbol = "aapl",
-            StockValue = new List<double>()
-        };
-
-        chart.
+        ClientState.StateChanged += OnClientStateChanged;
     }
 
-    void IDisposable.Dispose()
-    {
-        pollingCancellationToken?.Cancel();
-    }
-
-    private async void PollStockDataAsync(string symbol)
-    {
-        pollingCancellationToken = new CancellationTokenSource();
-        var restClient = new RestClient("https://sandbox.iexapis.com/v1");
-        var getStockValueRequest = new RestRequest("stock/{symbol}");
-        getStockValueRequest.AddQueryParameter("token", "Tsk_6c7152e5bd0a47a89cf6bbf72a607bde");
-        getStockValueRequest.AddUrlSegment("symbol", symbol);
-
-        while (!pollingCancellationToken.IsCancellationRequested)
-        {
-            var response = await restClient.ExecuteGetTaskAsync<double>(getStockValueRequest);
-            if (response.IsSuccessful)
-            {
-                data.StockValue.Add(response.Data);
-            }
-        }
-    }
+    void OnClientStateChanged(object sender, EventArgs e) => StateHasChanged();
+        
 }

@@ -1,0 +1,106 @@
+﻿@using Telerik.Blazor
+@using Telerik.Blazor.Components.Chart
+@using FirstBlazorApp.Shared;
+
+@using System.Threading;
+@implements IDisposable;
+@inject HttpClient HttpClient;
+
+<div class="stock-graph">
+    <p>
+        @companyData?.companyName
+    </p>
+    <div>
+        <TelerikButton class="delete-item" onclick="@OnRemoved">X</TelerikButton>
+    </div>
+    <TelerikChart ref="@chart">
+        <TelerikChartSeriesItems>
+            <TelerikChartSeries Type="ChartSeriesType.Line" Data="@data.StockValues"
+                                Field="@nameof(StockValueData.StockValue)"
+                                CategoryField="@nameof(StockValueData.Date)">
+            </TelerikChartSeries>
+        </TelerikChartSeriesItems>
+        <TelerikChartValueAxes>
+            <TelerikChartValueAxis Color="red"></TelerikChartValueAxis>
+        </TelerikChartValueAxes>
+    </TelerikChart>
+</div>
+
+@functions {
+
+    [Parameter] string SymbolToDisplay { get; set; }
+    [Parameter] EventCallback OnRemoved { get; set; }
+
+    CompanyData companyData;
+
+    TelerikChart chart;
+    CancellationTokenSource pollingCancellationToken;
+    Stock data;
+    protected override async Task OnInitAsync()
+    {
+        //Console.WriteLine($"Add symbol {SymbolToDisplay}");
+
+        data = new Stock
+        {
+            Symbol = SymbolToDisplay,
+            StockValues = new List<StockValueData>()
+        };
+
+        pollingCancellationToken?.Cancel();
+        pollingCancellationToken = new CancellationTokenSource();
+
+        var companyDataUrl = $"https://sandbox.iexapis.com/v1/stock/{data.Symbol}/company?token=Tsk_6c7152e5bd0a47a89cf6bbf72a607bde";
+
+        try
+        {
+            companyData = await HttpClient.GetJsonAsync<CompanyData>(companyDataUrl);
+            Console.WriteLine(companyData.companyName);
+        }
+        catch (Exception e)
+        {
+            pollingCancellationToken.Cancel();
+            Console.WriteLine(e);
+        }
+
+        await PollStockDataAsync();
+    }
+
+    void IDisposable.Dispose()
+    {
+        pollingCancellationToken?.Cancel();
+    }
+
+    private async Task PollStockDataAsync()
+    {
+        pollingCancellationToken = new CancellationTokenSource();
+
+        var url = $"https://sandbox.iexapis.com/v1/stock/{data.Symbol}/price?token=Tsk_6c7152e5bd0a47a89cf6bbf72a607bde";
+
+        while (!pollingCancellationToken.IsCancellationRequested)
+        {
+            try
+            {
+                //Console.WriteLine(url);
+
+                var value = await HttpClient.GetJsonAsync<double>(url);
+                //Console.WriteLine(value);
+                if (data.StockValues.Count == 15)
+                {
+                    data.StockValues.RemoveAt(0);
+                }
+                data.StockValues.Add(new StockValueData { Date = DateTime.Now.ToString("hh:mm:ss"), StockValue = value });
+
+                StateHasChanged();
+            }
+            catch (Exception e)
+            {
+                pollingCancellationToken.Cancel();
+                Console.Error.WriteLine(e);
+            }
+
+
+            await Task.Delay(2000);
+        }
+
+    }
+}

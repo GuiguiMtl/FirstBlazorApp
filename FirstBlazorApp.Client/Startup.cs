@@ -8,6 +8,7 @@ namespace FirstBlazorApp.Client
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddTelerikBlazor();
+            services.AddScoped<ClientState>();
         }
 
         public void Configure(IComponentsApplicationBuilder app)

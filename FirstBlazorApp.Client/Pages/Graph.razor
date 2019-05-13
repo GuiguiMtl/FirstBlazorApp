@@ -12,14 +12,13 @@
 
     @foreach (var symbolToDisplay in State.SymbolsToDisplay)
     {
+        @symbolToDisplay
         <StockGraph SymbolToDisplay="@symbolToDisplay" OnRemoved="() => State.RemoveSymbol(symbolToDisplay)"/>
     }
 
 @functions {
-        string SymbolToAdd;
-        List<string> ListOfGraphsToDisplay = new List<string>();
-
-        static DateTime date = DateTime.Now.AddDays(-1);
+    string SymbolToAdd;
+    List<string> ListOfGraphsToDisplay = new List<string>();
 
     protected async override Task OnInitAsync()
     {
@@ -28,10 +27,6 @@
 
     void OnClientStateChanged(object sender, EventArgs e)
     {
-        foreach (var symbol in State.SymbolsToDisplay)
-        {
-            Console.WriteLine(symbol);
-        }
-
+        StateHasChanged();
     }
 }

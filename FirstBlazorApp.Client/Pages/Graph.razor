@@ -1,8 +1,11 @@
 ﻿@page "/graph"
 @using Telerik.Blazor.Components.TextBox;
 @using Telerik.Blazor.Components.Button;
+@using  FirstBlazorApp.Shared.Services;
 @inject HttpClient HttpClient;
 @inject ClientState State;
+@inject ExportStockValuesToExcelService ServiceToExportToExcel;
+@inject IJSRuntime JS
 @implements IDisposable;
 
 <div>
@@ -10,12 +13,15 @@
     <TelerikTextBox Id="SymbolToAddId" bind-Value="@SymbolToAdd" />
     <TelerikButton OnClick="() => State.AddSymbols(SymbolToAdd)">Add</TelerikButton>
 </div>
+<div>
+    <TelerikButton OnClick="() => ExportGraphs()">Export Graphs</TelerikButton>
+</div>
 
-    @foreach (var symbolToDisplay in State.SymbolsToDisplay)
-    {
-        @symbolToDisplay
-        <StockGraph SymbolToDisplay="@symbolToDisplay" OnRemoved="() => State.RemoveSymbol(symbolToDisplay)"/>
-    }
+@foreach (var symbolToDisplay in State.SymbolsToDisplay)
+{
+    @symbolToDisplay
+    <StockGraph SymbolToDisplay="@symbolToDisplay" OnRemoved="() => State.RemoveSymbol(symbolToDisplay)" />
+}
 
 @functions {
     string SymbolToAdd;
@@ -34,5 +40,11 @@
     void IDisposable.Dispose()
     {
         State.ClearAllStockValues();
+    }
+
+    public void ExportGraphs()
+    {
+        var data = ServiceToExportToExcel.GenerateFile(State.ListOfStockValues.Values.ToList());
+        FileUtil.SaveAs(JS, "StockValues.xlsx", data);
     }
 }

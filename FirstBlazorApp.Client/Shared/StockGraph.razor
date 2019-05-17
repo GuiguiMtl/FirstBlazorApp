@@ -43,14 +43,13 @@
 
     protected override async Task OnParametersSetAsync()
     {
-        StockDataProvider = new StockDataProvider(SymbolToDisplay);
+        StockDataProvider = new StockDataProvider(SymbolToDisplay, Configuration);
         StockValues = ClientState.GetStockValues(SymbolToDisplay);
         StateHasChanged();
         pollingCancellationToken?.Cancel();
         pollingCancellationToken = new CancellationTokenSource();
 
         var companyDataUrl = Configuration["companyDataUrl"];
-        //var companyDataUrl = "https://sandbox.iexapis.com/v1/stock/{StockValues.Symbol}/company?token=Tsk_6c7152e5bd0a47a89cf6bbf72a607bde";
 
         try
         {
@@ -74,8 +73,6 @@
     {
         pollingCancellationToken = new CancellationTokenSource();
 
-        var url = Configuration["stockValueUrl"];
-        //$"https://sandbox.iexapis.com/v1/stock/{StockValues.Symbol}/price?token=Tsk_6c7152e5bd0a47a89cf6bbf72a607bde";
 
         while (!pollingCancellationToken.IsCancellationRequested)
         {

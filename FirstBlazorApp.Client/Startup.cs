@@ -2,6 +2,7 @@ using System;
 using Autofac;
 using Autofac.Extensions.DependencyInjection;
 using FirstBlazorApp.Shared;
+using FirstBlazorApp.Shared.Services;
 using Microsoft.AspNetCore.Components.Builder;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -22,7 +23,7 @@ namespace FirstBlazorApp.Client
             services.AddSingleton<RandomValuesProvider>();
             Configuration = BuildConfiguration();
             services.AddSingleton(Configuration);
-
+            services.AddSingleton<ExportStockValuesToExcelService>();
            
             containerBuilder.Populate(services);
 

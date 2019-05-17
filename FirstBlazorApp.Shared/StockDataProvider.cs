@@ -1,4 +1,5 @@
-﻿using Newtonsoft.Json;
+﻿using Microsoft.Extensions.Configuration;
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Net.Http;
@@ -11,13 +12,16 @@ namespace FirstBlazorApp.Shared
     public class StockDataProvider
     {
         public string Symbol { get; private set; }
+        public IConfiguration Configuration { get; }
+
         private string _url;
         private HttpClient _httpClient;
 
-        public StockDataProvider(string symbol)
+        public StockDataProvider(string symbol, IConfiguration configuration)
         {
             Symbol = symbol;
-            _url = $"https://sandbox.iexapis.com/v1/stock/{Symbol}/price?token=Tsk_6c7152e5bd0a47a89cf6bbf72a607bde";
+            Configuration = configuration;
+            _url = Configuration["stockValueUrl"].Replace("{StockValues.Symbol}", Symbol);
             _httpClient = new HttpClient();
         }
         

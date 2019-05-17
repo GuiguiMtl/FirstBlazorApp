@@ -48,6 +48,10 @@ namespace FirstBlazorApp.Client
         {
             ListOfStockValues.Remove(symbol);
         }
+        public void ClearAllStockValues()
+        {
+            ListOfStockValues.Clear();
+        }
 
         public GraphStockValues GetStockValues(string symbol)
         {

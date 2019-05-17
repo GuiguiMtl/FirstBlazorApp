@@ -1,5 +1,7 @@
 ﻿using Microsoft.AspNetCore.Blazor.Hosting;
 using Microsoft.Extensions.Configuration;
+using Autofac.Extensions.DependencyInjection;
+
 
 namespace FirstBlazorApp.Client
 {
@@ -12,14 +14,9 @@ namespace FirstBlazorApp.Client
 
         public static IWebAssemblyHostBuilder CreateHostBuilder(string[] args) =>
             BlazorWebAssemblyHost.CreateDefaultBuilder()
+            .ConfigureServices(services => services.AddAutofac())
                 .UseBlazorStartup<Startup>();
 
-        static void ConfigConfiguration(IConfigurationBuilder config)
-        {
-            config.SetBasePath(Directory.GetCurrentDirectory())
-                .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
-                .AddJsonFile($"appsettings.{ctx.HostingEnvironment.EnvironmentName}.json", optional: true, reloadOnChange: true);
-
-        }
+        
     }
 }

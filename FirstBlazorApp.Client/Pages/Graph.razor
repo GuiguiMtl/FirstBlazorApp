@@ -3,6 +3,7 @@
 @using Telerik.Blazor.Components.Button;
 @inject HttpClient HttpClient;
 @inject ClientState State;
+@implements IDisposable;
 
 <div>
     Add Symbol
@@ -28,5 +29,10 @@
     void OnClientStateChanged(object sender, EventArgs e)
     {
         StateHasChanged();
+    }
+
+    void IDisposable.Dispose()
+    {
+        State.ClearAllStockValues();
     }
 }

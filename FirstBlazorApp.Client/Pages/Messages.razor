@@ -1,0 +1,42 @@
+﻿@page "/messages"
+@using Telerik.Blazor.Components.TextBox;
+@using Telerik.Blazor.Components.Button;
+@using FirstBlazorApp.Shared.Events;
+
+<div>
+    <TelerikTextBox Id="MesageToSend" bind-Value="@MesageToSend" />
+    <TelerikButton Id="MessageToSend" OnClick="() => SendMessage(MesageToSend)">Send</TelerikButton>
+</div>
+
+<li>
+    @foreach (var message in messageReceived)
+    {
+        <ul>
+            <div>
+                Message Received :
+                <span>@message</span>
+            </div>
+        </ul>
+    }
+</li>
+
+
+@functions {
+    string MesageToSend;
+    List<string> messageReceived = new List<string>();
+
+    protected async override Task OnInitAsync()
+    {
+    }
+
+    private void AddMessage(object sender, NewEventSent e)
+    {
+        messageReceived.Add(e.Message);
+        StateHasChanged();
+    }
+
+    public void SendMessage(string message)
+    {
+        var @event = new NewEventSent(message);
+    }
+}

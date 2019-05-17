@@ -1,5 +1,7 @@
+using System;
+using Autofac;
+using Autofac.Extensions.DependencyInjection;
 using FirstBlazorApp.Shared;
-using FirstBlazorApp.Shared.RabbitMq;
 using Microsoft.AspNetCore.Components.Builder;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -8,50 +10,42 @@ namespace FirstBlazorApp.Client
 {
     public class Startup
     {
-        public void ConfigureServices(IServiceCollection services)
+        public IConfiguration Configuration { get; private set; }
+        public IContainer Container { get; private set; }
+
+
+        public IServiceProvider ConfigureServices(IServiceCollection services)
         {
+            var containerBuilder = new ContainerBuilder();
             services.AddTelerikBlazor();
             services.AddSingleton<ClientState>();
             services.AddSingleton<RandomValuesProvider>();
+            Configuration = BuildConfiguration();
+            services.AddSingleton(Configuration);
 
-            var builder = new ConfigurationBuilder().AddJsonFile();
+           
+            containerBuilder.Populate(services);
 
-            services.AddSingleton<IRabbitMQPersistentConnection>(sp =>
-            {
-                var rabbitMqConfigSection = Configuration.GetSection("RabbitMQ");
-                var factory = new ConnectionFactory()
-                {
-                    HostName = rabbitMqConfigSection["HostName"]
-                };
+            Container = containerBuilder.Build();
+            return new AutofacServiceProvider(Container);
 
-                if (!string.IsNullOrEmpty(rabbitMqConfigSection["VHostName"]))
-                {
-                    factory.VirtualHost = rabbitMqConfigSection["VHostName"];
-                }
-
-                if (!string.IsNullOrEmpty(rabbitMqConfigSection["Username"]))
-                {
-                    factory.UserName = rabbitMqConfigSection["Username"];
-                }
-
-                if (!string.IsNullOrEmpty(rabbitMqConfigSection["Password"]))
-                {
-                    factory.Password = rabbitMqConfigSection["Password"];
-                }
-
-                var retryCount = 5;
-                if (!string.IsNullOrEmpty(rabbitMqConfigSection["EventBusRetryCount"]))
-                {
-                    retryCount = int.Parse(rabbitMqConfigSection["EventBusRetryCount"]);
-                }
-
-                return new DefaultRabbitMQPersistentConnection(factory, logger, retryCount);
-            });
         }
 
         public void Configure(IComponentsApplicationBuilder app)
         {
             app.AddComponent<App>("app");
+        }
+
+        private IConfiguration BuildConfiguration()
+        {
+            ConfigurationBuilder configurationBuilder = new ConfigurationBuilder();
+            System.Reflection.Assembly assembly = System.Reflection.Assembly.GetExecutingAssembly();
+            var appSettingFile = assembly.GetName().Name + ".Configuration.appsettings.json";
+
+            configurationBuilder.AddJsonFile(
+                    new InMemoryFileProvider(assembly.GetManifestResourceStream(appSettingFile)), appSettingFile, false, false);
+
+            return configurationBuilder.Build();
         }
     }
 }

@@ -1,12 +1,13 @@
 ﻿@using Telerik.Blazor
 @using Telerik.Blazor.Components.Chart
 @using FirstBlazorApp.Shared;
-
+@using Microsoft.Extensions.Configuration;
 @using System.Threading;
 @implements IDisposable;
 @inject HttpClient HttpClient;
 @inject ClientState ClientState;
 @inject RandomValuesProvider RandomProvider;
+@inject IConfiguration  Configuration;
 
 <div class="stock-graph">
     <p>
@@ -48,7 +49,8 @@
         pollingCancellationToken?.Cancel();
         pollingCancellationToken = new CancellationTokenSource();
 
-        var companyDataUrl = $"https://sandbox.iexapis.com/v1/stock/{StockValues.Symbol}/company?token=Tsk_6c7152e5bd0a47a89cf6bbf72a607bde";
+        var companyDataUrl = Configuration["companyDataUrl"];
+        //var companyDataUrl = "https://sandbox.iexapis.com/v1/stock/{StockValues.Symbol}/company?token=Tsk_6c7152e5bd0a47a89cf6bbf72a607bde";
 
         try
         {
@@ -72,7 +74,8 @@
     {
         pollingCancellationToken = new CancellationTokenSource();
 
-        var url = $"https://sandbox.iexapis.com/v1/stock/{StockValues.Symbol}/price?token=Tsk_6c7152e5bd0a47a89cf6bbf72a607bde";
+        var url = Configuration["stockValueUrl"];
+        //$"https://sandbox.iexapis.com/v1/stock/{StockValues.Symbol}/price?token=Tsk_6c7152e5bd0a47a89cf6bbf72a607bde";
 
         while (!pollingCancellationToken.IsCancellationRequested)
         {

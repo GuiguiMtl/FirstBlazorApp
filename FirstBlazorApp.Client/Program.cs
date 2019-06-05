@@ -14,7 +14,6 @@ namespace FirstBlazorApp.Client
 
         public static IWebAssemblyHostBuilder CreateHostBuilder(string[] args) =>
             BlazorWebAssemblyHost.CreateDefaultBuilder()
-            .ConfigureServices(services => services.AddAutofac())
                 .UseBlazorStartup<Startup>();
 
         

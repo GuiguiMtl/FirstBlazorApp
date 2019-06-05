@@ -5,6 +5,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Newtonsoft.Json.Serialization;
 using System.Linq;
+using System.Net.Mime;
 
 namespace FirstBlazorApp.Server
 {
@@ -15,10 +16,10 @@ namespace FirstBlazorApp.Server
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddMvc().AddNewtonsoftJson();
-            services.AddResponseCompression(opts =>
+            services.AddResponseCompression(options =>
             {
-                opts.MimeTypes = ResponseCompressionDefaults.MimeTypes.Concat(
-                    new[] { "application/octet-stream" });
+                options.MimeTypes = ResponseCompressionDefaults.MimeTypes.Concat(
+                    new[] { MediaTypeNames.Application.Octet });
             });
         }
 
@@ -37,7 +38,7 @@ namespace FirstBlazorApp.Server
 
             app.UseEndpoints(endpoints =>
             {
-                endpoints.MapDefaultControllerRoute();
+                endpoints.MapControllers();
             });
 
             app.UseBlazor<Client.Startup>();

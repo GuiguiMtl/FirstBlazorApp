@@ -15,7 +15,7 @@ namespace FirstBlazorApp.Client
         public IContainer Container { get; private set; }
 
 
-        public IServiceProvider ConfigureServices(IServiceCollection services)
+        public void ConfigureServices(IServiceCollection services)
         {
             var containerBuilder = new ContainerBuilder();
             services.AddTelerikBlazor();
@@ -24,11 +24,6 @@ namespace FirstBlazorApp.Client
             Configuration = BuildConfiguration();
             services.AddSingleton(Configuration);
             services.AddSingleton<ExportStockValuesToExcelService>();
-           
-            containerBuilder.Populate(services);
-
-            Container = containerBuilder.Build();
-            return new AutofacServiceProvider(Container);
 
         }
 
